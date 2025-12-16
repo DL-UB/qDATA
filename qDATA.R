@@ -183,7 +183,7 @@ if(interactive()){
                                           downloadButton("downloadFC", "Export FC plot"),
                                           withLoader(plotOutput("plotFC", height = 700), type="html", loader="dnaspin"),
                                           br(),br(),br(),
-                                          h4("Summary table of fold-change (FC = ", HTML(paste0("average 2",tags$sup("-\u0394\u0394Ct"),")")), 
+                                          h4("Summary table of fold-change (FC = ", HTML(paste0("2",tags$sup("-\u0394\u0394Ct"),")")), 
                                              " values between each pair of experimental group of interest using the Livak formula."),
                                           br(),
                                           downloadButton("fc_download","Export FC table"),
@@ -203,7 +203,7 @@ if(interactive()){
                                           withLoader(plotOutput("plotlogFC", height = 700), type="html", loader="dnaspin"),
                                           br(),br(),br(),
                                           h4("Summary table of", HTML(paste0("log",tags$sub("2"),"FC")), 
-                                             HTML(paste0("( = average log",tags$sub("2"),"2",tags$sup("-\u0394\u0394Ct"),")")), 
+                                             HTML(paste0("(log",tags$sub("2"),"2",tags$sup("-\u0394\u0394Ct"),")")), 
                                              " values between each pair of experimental group of interest using the Livak formula."),
                                           br(),
                                           downloadButton("log2fc_download",HTML(paste0("Export Log", tags$sub("2"), "FC table"))),
@@ -222,8 +222,8 @@ if(interactive()){
                                           h4(HTML(paste0("Export the 2", tags$sup("-\u0394Ct"), " data:"))),
                                           downloadButton("output2Dctvalues", HTML(paste0("Export 2", tags$sup("-\u0394Ct"), " table"))),
                                           br(),br(),
-                                          h4(HTML(paste0("Export the 2", tags$sup("-\u0394\u0394Ct"), " FC data:"))),
-                                          downloadButton("outputDDctvalues", HTML(paste0("Export 2", tags$sup("-\u0394\u0394Ct"), " table"))),
+                                          h4(HTML(paste0("Export the ", "\u0394\u0394Ct", " data:"))),
+                                          downloadButton("outputDDctvalues", HTML(paste0("Export ","\u0394\u0394Ct", " table"))),
                                           br(),br(),br(),br(),
                                           h4(HTML(paste0("Export all two sample tests"))),
                                           downloadButton("all_two_tests", HTML(paste0("Export two sample tests table"))),
@@ -241,10 +241,10 @@ if(interactive()){
     about_page <- tabPanel(title="About",
                            titlePanel("About"),
                            h3("qRTdatA (quick Real-Time PCR Data Analyser) is a tool created with R Shiny in the Drosophila Laboratory, Department of Genetics, Faculty of Biology, University of Bucharest."),
-                           h5("March-July 2023"),
+                           #h5("March-July 2023"),
                            br(),
-                           h3("For citing our tool, please use: Ionascu, A., Ecovoiu, A.A., Chifiriuc, M.C., Ratiu, A.C. (2023). qDATA - an R application implementing a practical framework for analyzing quantitative Real-Time PCR data. bioRxiv, 2023-11."),
-                           h3("Access qDATA article from", tags$a(href="https://doi.org/10.1101/2023.11.29.569183", "BioRxiv")),
+                           h3("For citing our tool, please use: Ionascu, A., Ecovoiu, A.A., Chifiriuc, M.C., Ratiu, A.C. (2024). qDATA - an R application implementing a practical framework for analyzing quantitative Real-Time PCR data. BioTechniques, 76(12), 559-573."),
+                           h3("Access qDATA article from", tags$a(href="https://www.tandfonline.com/doi/full/10.1080/07366205.2024.2442217", "BioTechniques")),
                            h3("For additional information, suggestions or inquiries, please contact us via email: a.ionascu20@s.bio.unibuc.ro"),
                            br(),br(),br(),
                            h3("This tool uses several abbreviations which are explained here:"),
@@ -1767,7 +1767,8 @@ if(interactive()){
         
         Livak(x=i, y=j)
         colnames(DDct_table)[r] <- paste(colnames(outputDct_table)[i], " vs ", colnames(outputDct_table)[j])
-        livak <- 2^(-DDct)
+       # livak <- 2^(-DDct)
+        livak <- DDct
         if (length(livak) == length(DDct_table[,r])) {
           DDct_table[,r] <- c(livak) }
         else {
@@ -1789,7 +1790,7 @@ if(interactive()){
     
     # Download 2^-DDct table
     output$outputDDctvalues <- downloadHandler(
-      filename = function(){paste("2^-DDct_table_",gsub(":","-",format(Sys.time(),'%d-%m-%Y_%H-%M-%S')), ".csv", sep="")},
+      filename = function(){paste("DDct_table_",gsub(":","-",format(Sys.time(),'%d-%m-%Y_%H-%M-%S')), ".csv", sep="")},
       content = function(fname){  write.csv(DDct_table_decimals(), fname) })
     
     
@@ -1808,16 +1809,16 @@ if(interactive()){
       
       for(i in seq(1, ncol(DDct_table),1)){
         FCtable$Comparison[i] <- paste(colnames(DDct_table)[i])
-        FCtable$FC[i] <- mean(na.omit(DDct_table[,i]))
-        FCtable$Median[i] <- median(na.omit(DDct_table[,i]))
-        FCtable$SD[i] <- sd(na.omit(DDct_table[,i]))
-        FCtable$Variance[i] <- var(na.omit(DDct_table[,i]))
-        FCtable$SE[i] <- SE(na.omit(DDct_table[,i]))
-        FCtable$`CI-lower`[i] <- as.numeric(FCtable$FC[i] - FCtable$SE[i])
-        FCtable$`CI-upper`[i] <- as.numeric(FCtable$FC[i] + FCtable$SE[i])
-        FCtable$IQR[i] <- IQR(DDct_table[,i], na.rm = TRUE)
-        FCtable$Minimum[i] <- min(na.omit(DDct_table[,i]))
-        FCtable$Maximum[i] <- max(na.omit(DDct_table[,i]))
+        FCtable$FC[i] <- 2^(-mean(na.omit(DDct_table[,i])))
+        FCtable$Median[i] <- 2^(-median(na.omit(DDct_table[,i])))
+        FCtable$SD[i] <- 2^(-sd(na.omit(DDct_table[,i])))
+        FCtable$Variance[i] <- 2^(-var(na.omit(DDct_table[,i])))
+        FCtable$SE[i] <- 2^(-SE(na.omit(DDct_table[,i])))
+        FCtable$`CI-lower`[i] <- 2^(- (as.numeric(FCtable$FC[i] - FCtable$SE[i])) )
+        FCtable$`CI-upper`[i] <- 2^(- (as.numeric(FCtable$FC[i] + FCtable$SE[i])) )
+        FCtable$IQR[i] <- 2^(-IQR(DDct_table[,i], na.rm = TRUE))
+        FCtable$Minimum[i] <- 2^(-min(na.omit(DDct_table[,i])))
+        FCtable$Maximum[i] <- 2^(-max(na.omit(DDct_table[,i])))
         
         if(FCtable$FC[i] > 1){
           FCtable$Type[i] <- paste0(c("Up-regulated"),"   ",fa(name="arrow-up", fill="blue", prefer_type = "solid")) }
@@ -1922,9 +1923,9 @@ if(interactive()){
       
       for(i in seq(1, ncol(DDct_table),1)){
         log2FC_table$Comparison[i] <- paste(colnames(DDct_table)[i])
-        log2FC_table$log2FC[i] <- log(mean(na.omit(DDct_table[,i])),2)
-        log2FC_table$`SE-lower`[i] <- log(mean(na.omit(DDct_table[,i]))-SE(na.omit(DDct_table[,i])),2)
-        log2FC_table$`SE-upper`[i] <- log(mean(na.omit(DDct_table[,i]))+SE(na.omit(DDct_table[,i])),2)
+        log2FC_table$log2FC[i] <- log(2^(-mean(na.omit(DDct_table[,i]))),2)
+        log2FC_table$`SE-lower`[i] <- log( 2^(- (mean(na.omit(DDct_table[,i]))-SE(na.omit(DDct_table[,i]))) ), 2)
+        log2FC_table$`SE-upper`[i] <- log( 2^(- (mean(na.omit(DDct_table[,i]))+SE(na.omit(DDct_table[,i]))) ), 2)
         
         if(log2FC_table$log2FC[i] > 0){
           log2FC_table$Type[i] <- paste0(c("Up-regulated"),"   ",fa(name="arrow-up", fill="blue", prefer_type = "solid")) }
